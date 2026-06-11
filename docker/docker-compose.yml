@@ -1,0 +1,127 @@
+version: '3.8'
+
+services:
+  # ──────────────────────────────────────────────
+  # MySQL Database
+  # ──────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: netguard-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-netguard_ai}
+      MYSQL_USER: ${MYSQL_USER:-netguard}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-netguard_password}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root_password}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - netguard-network
+
+  # ──────────────────────────────────────────────
+  # Redis Cache & Pub/Sub
+  # ──────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: netguard-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - netguard-network
+
+  # ──────────────────────────────────────────────
+  # Flask Backend API
+  # ──────────────────────────────────────────────
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: netguard-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      MYSQL_HOST: mysql
+      REDIS_URL: redis://redis:6379/0
+      FLASK_ENV: ${FLASK_ENV:-production}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ../backend/ml_models:/app/ml_models
+      - ../backend/logs:/app/logs
+    # NOTE: For packet capture on the host network, uncomment below
+    # and comment out the networks section for this service
+    # network_mode: host
+    networks:
+      - netguard-network
+
+  # ──────────────────────────────────────────────
+  # React Frontend (Nginx)
+  # ──────────────────────────────────────────────
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: netguard-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - netguard-network
+
+  # ──────────────────────────────────────────────
+  # Ollama AI (Optional - use with --profile ai)
+  # ──────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: netguard-ollama
+    restart: unless-stopped
+    profiles:
+      - ai
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - netguard-network
+
+# ──────────────────────────────────────────────
+# Networks
+# ──────────────────────────────────────────────
+networks:
+  netguard-network:
+    driver: bridge
+
+# ──────────────────────────────────────────────
+# Volumes
+# ──────────────────────────────────────────────
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  ollama_data:
+    driver: local

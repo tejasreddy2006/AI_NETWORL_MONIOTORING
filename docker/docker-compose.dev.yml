@@ -1,0 +1,44 @@
+version: '3.8'
+
+# Development overrides — use with:
+#   docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  # ──────────────────────────────────────────────
+  # Backend — Development Mode
+  # ──────────────────────────────────────────────
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    environment:
+      FLASK_ENV: development
+      FLASK_DEBUG: "1"
+      DEMO_MODE: "true"
+      LOG_LEVEL: DEBUG
+    volumes:
+      - ../backend:/app
+      - /app/__pycache__
+    command: ["python", "run.py"]
+
+  # ──────────────────────────────────────────────
+  # Frontend — Development Mode (Vite dev server)
+  # ──────────────────────────────────────────────
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules
+    command: ["npm", "run", "dev", "--", "--host"]
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+
+  # ──────────────────────────────────────────────
+  # Ollama — Always on in dev
+  # ──────────────────────────────────────────────
+  ollama:
+    profiles: []  # Override: always run in dev

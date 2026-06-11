@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Build
+frontend/dist/
+frontend/build/
+
+# Database
+*.db
+*.sqlite3
+
+# ML Models
+backend/ml_models/*.pkl
+backend/ml_models/*.joblib
+
+# Logs
+*.log
+backend/logs/
+
+# GeoIP
+*.mmdb
+
+# Docker
+mysql_data/
+redis_data/
+ollama_data/
+
+# OS
+.DS_Store
+Thumbs.db

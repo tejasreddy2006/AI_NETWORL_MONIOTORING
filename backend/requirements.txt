@@ -1,0 +1,43 @@
+# Core
+flask==3.1.1
+flask-socketio==5.5.1
+flask-sqlalchemy==3.1.1
+flask-migrate==4.1.0
+flask-cors==5.0.1
+flask-limiter==3.12
+
+# Database
+pymysql==1.1.1
+cryptography==44.0.3
+redis==5.2.1
+
+# Packet Capture
+scapy==2.6.1
+
+# ML
+scikit-learn==1.6.1
+joblib==1.4.2
+numpy==2.2.6
+pandas==2.2.3
+
+# AI
+langchain==0.3.25
+langchain-community==0.3.24
+langchain-ollama==0.3.3
+langchain-openai==0.3.18
+
+# GeoIP
+geoip2==4.8.1
+maxminddb==2.6.2
+
+# Server
+eventlet==0.39.1
+gunicorn==23.0.0
+
+# Utilities
+python-dotenv==1.1.0
+marshmallow==3.26.1
+
+# Development
+pytest==8.3.5
+pytest-cov==6.1.1
